@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语填空练习 · 增强防护</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .card {
+            max-width: 780px;
+            width: 100%;
+            background: white;
+            border-radius: 28px;
+            padding: 30px 30px 35px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 6px 12px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+        /* 开发者工具检测遮罩 - 完全不透明 */
+        #devtools-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;  /* 改为纯黑色，完全不透明 */
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            flex-direction: column;
+            padding: 20px;
+        }
+        #devtools-overlay.show {
+            display: flex;
+        }
+        #devtools-overlay .content {
+            background: white;
+            padding: 40px 50px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        #devtools-overlay .content h2 {
+            color: #c0392b;
+            font-size: 28px;
+            margin-top: 0;
+        }
+        #devtools-overlay .content p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        #devtools-overlay .content .icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+        #devtools-overlay .content .btn-reload {
+            background: #1d2b3f;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.15s;
+        }
+        #devtools-overlay .content .btn-reload:hover {
+            background: #13202e;
+            transform: scale(0.97);
+        }
+        .timer-area {
+            background: #fef6f6;
+            border-radius: 60px;
+            padding: 12px 24px;
+            display: inline-block;
+            margin-bottom: 24px;
+            border: 1px solid #fde2e2;
+        }
+        .timer-label {
+            font-size: 18px;
+            font-weight: 600;
+            color: #b33c3c;
+        }
+        #timer {
+            background: #c0392b;
+            color: white;
+            padding: 0 14px;
+            border-radius: 40px;
+            font-size: 22px;
+            font-weight: 700;
+            min-width: 56px;
+            display: inline-block;
+            text-align: center;
+            line-height: 1.6;
+            margin: 0 4px;
+        }
+        .question-block {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 18px 18px 14px;
+            margin-bottom: 22px;
+            border: 1px solid #eef2f6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            transition: 0.15s;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .question-block:hover {
+            border-color: #d0d9e3;
+        }
+        .row-a {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 12px;
+        }
+        .label-a {
+            font-weight: 600;
+            margin: 0;
+            color: #1e293b;
+            font-size: 16px;
+        }
+        .label-a.hidden {
+            display: none;
+        }
+        .input-row {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 12px;
+        }
+        .input-answer {
+            border: 1.5px solid #dce2ea;
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-size: 15px;
+            width: 220px;
+            background: white;
+            transition: 0.2s;
+            font-family: inherit;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        .input-answer:focus {
+            border-color: #3b7cff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 124, 255, 0.15);
+        }
+        .input-answer:disabled {
+            background: #f1f4f8;
+            color: #2c3e50;
+            opacity: 0.8;
+            border-color: #cdd5df;
+        }
+        .question-text {
+            margin: 0;
+            font-weight: 500;
+            color: #0b1e33;
+            font-size: 16px;
+            background: #f2f6fc;
+            padding: 4px 14px;
+            border-radius: 40px;
+            display: inline-block;
+            word-break: break-word;
+        }
+        .question-text .ans-placeholder {
+            color: #c0392b;
+            font-weight: 700;
+            background: #fde8e8;
+            padding: 0 6px;
+            border-radius: 6px;
+            border: 1px dashed #c0392b;
+        }
+        .score-tag {
+            color: #4a5b6e;
+            font-size: 13px;
+            font-weight: 500;
+            background: #e9edf2;
+            padding: 0 12px;
+            border-radius: 30px;
+            line-height: 1.8;
+        }
+        .result-badge {
+            font-weight: 600;
+            font-size: 18px;
+            min-width: 30px;
+            display: inline-block;
+            margin-left: 2px;
+        }
+        .b-answer {
+            margin: 8px 0 0 0;
+            padding: 8px 14px;
+            background: #f7faff;
+            border-radius: 30px;
+            color: #1f3a5f;
+            font-size: 15px;
+            border-left: 4px solid #98b9e0;
+            display: inline-block;
+            width: auto;
+            max-width: 100%;
+            word-break: break-word;
+        }
+        .b-answer strong {
+            font-weight: 600;
+            color: #0f2b4a;
+        }
+        .b-answer .ans-placeholder {
+            color: #c0392b;
+            font-weight: 700;
+            background: #fde8e8;
+            padding: 0 6px;
+            border-radius: 6px;
+            border: 1px dashed #c0392b;
+        }
+        .action-bar {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px 12px;
+            border-top: 1px solid #e6edf4;
+            padding-top: 24px;
+        }
+        .submit-btn {
+            background: #1d2b3f;
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 10px 28px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .submit-btn:hover:not(:disabled) {
+            background: #13202e;
+            transform: scale(0.97);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #5b6b7e;
+            transform: none;
+        }
+        #score-board {
+            font-weight: 600;
+            font-size: 18px;
+            color: #1e293b;
+            background: #edf3fa;
+            padding: 8px 22px;
+            border-radius: 60px;
+            white-space: nowrap;
+        }
+        #score-board span {
+            color: #c0392b;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 4px;
+        }
+        .wrong-hint {
+            color: #c0392b;
+            font-size: 14px;
+            font-weight: 500;
+            background: #ffeeee;
+            padding: 2px 14px;
+            border-radius: 40px;
+            margin-left: 4px;
+            display: inline-block;
+        }
+        .success-msg {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 500;
+            border-left: 4px solid #4caf50;
+            display: none;
+        }
+        .success-msg.show {
+            display: block;
+        }
+        .security-badge {
+            display: inline-block;
+            font-size: 12px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+        @media (max-width: 600px) {
+            .card { padding: 20px 16px; }
+            .input-answer { width: 100%; }
+            .action-bar { flex-direction: column; align-items: stretch; }
+            #score-board { text-align: center; }
+            #devtools-overlay .content { padding: 25px 20px; margin: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 开发者工具检测遮罩 - 完全不透明 -->
+<div id="devtools-overlay">
+    <div class="content">
+        <div class="icon">🔒</div>
+        <h2>⚠️ 检测到开发者工具</h2>
+        <p>为了保护考试公平性，检测到开发者工具已打开。<br>请关闭开发者工具后继续答题。</p>
+        <button class="btn-reload" onclick="location.reload()">🔄 关闭并刷新页面</button>
+    </div>
+</div>
+
+<div class="card">
+
+    <!-- 计时器 -->
+    <div class="timer-area">
+        <span class="timer-label">⏳ 剩余时间：<span id="timer">  </span> 秒</span>
+        <span class="security-badge">🔐 安全模式</span>
+    </div>
+
+    <!-- 成功提示 -->
+    <div id="success-msg" class="success-msg show">
+        ✅ 已加载内置题库（20 道题目）· 安全防护已开启
+    </div>
+
+    <!-- 题目容器 -->
+    <div id="quiz-container"></div>
+
+    <!-- 底部提交 & 总分 -->
+    <div class="action-bar">
+        <button id="submit-btn" class="submit-btn">📤 一键提交所有答案</button>
+        <span id="score-board">🏆 得分：<span>0</span> / 100 分</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ============================================================
+        // ★ 全局变量
+        // ============================================================
+        window.remainingTime = 1200;
+        let isSubmitted = false;
+        let devtoolsOpen = false;
+        let detectionEnabled = true;
+        let detectionCount = 0;
+        const MAX_DETECTIONS = 3;
+
+        // ============================================================
+        // ★ 1. 检测开发者工具是否打开（优化版 - 降低误报）
+        // ============================================================
+        function detectDevTools() {
+            if (!detectionEnabled) return false;
+            
+            const overlay = document.getElementById('devtools-overlay');
+            if (!overlay) return false;
+            
+            if (devtoolsOpen) return true;
+            
+            let detected = false;
+            
+            // 方法1：检测元素尺寸变化（提高阈值，降低敏感度）
+            const threshold = 200;
+            const widthDiff = Math.abs(window.outerWidth - window.innerWidth);
+            const heightDiff = Math.abs(window.outerHeight - window.innerHeight);
+            
+            if (widthDiff > threshold || heightDiff > threshold) {
+                detected = true;
+            }
+            
+            // 方法2：利用 console.log 的 toString 方法检测
+            try {
+                const devtools = /./;
+                devtools.toString = function() {
+                    return '';
+                };
+                console.log('%c', devtools);
+            } catch (e) {
+                // 忽略错误
+            }
+            
+            // 如果检测到，增加计数
+            if (detected) {
+                detectionCount++;
+                if (detectionCount >= MAX_DETECTIONS) {
+                    devtoolsOpen = true;
+                    overlay.classList.add('show');
+                    return true;
+                }
+            } else {
+                if (detectionCount > 0) {
+                    detectionCount = Math.max(0, detectionCount - 1);
+                }
+            }
+            
+            return detected;
+        }
+
+        // 延迟启动检测
+        setTimeout(() => {
+            detectDevTools();
+            
+            setInterval(() => {
+                detectDevTools();
+            }, 1000);
+        }, 2000);
+
+        // ============================================================
+        // ★ 2. 键盘事件拦截
+        // ============================================================
+        document.addEventListener('keydown', function(e) {
+            const target = e.target;
+            if (target && target.tagName === 'INPUT' && target.classList.contains('input-answer')) {
+                return true;
+            }
+            
+            if (e.key.startsWith('F') && e.key.length <= 3) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'c' || e.key === 'C' || e.key === 'v' || e.key === 'V') {
+                    if (target && target.tagName === 'INPUT') {
+                        return true;
+                    }
+                }
+                
+                const forbidden = [
+                    'u', 'U', 's', 'S', 'p', 'P', 
+                    'x', 'X', 'a', 'A', 'o', 'O', 
+                    'h', 'H', 'j', 'J', 'i', 'I',
+                    'k', 'K', 'l', 'L', 'm', 'M',
+                    'n', 'N', 'e', 'E', 'f', 'F',
+                    'g', 'G', 'w', 'W'
+                ];
+                if (forbidden.includes(e.key)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }
+
+            if (e.ctrlKey && e.shiftKey) {
+                const forbidden = ['i', 'I', 'j', 'J', 'c', 'C', 'e', 'E', 'm', 'M'];
+                if (forbidden.includes(e.key)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }
+
+            if (e.altKey) {
+                const forbidden = ['f', 'F', 'v', 'V', 't', 'T', 'a', 'A'];
+                if (forbidden.includes(e.key)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }
+
+            if (e.key === 'PrintScreen') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+        }, true);
+
+        // ============================================================
+        // ★ 3. 阻止元素选择和复制
+        // ============================================================
+        document.addEventListener('copy', function(e) {
+            const target = e.target;
+            if (target && target.tagName === 'INPUT' && target.classList.contains('input-answer')) {
+                return true;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }, true);
+
+        document.addEventListener('cut', function(e) {
+            const target = e.target;
+            if (target && target.tagName === 'INPUT' && target.classList.contains('input-answer')) {
+                return true;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }, true);
+
+        document.addEventListener('paste', function(e) {
+            const target = e.target;
+            if (target && target.tagName === 'INPUT' && target.classList.contains('input-answer')) {
+                return true;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }, true);
+
+        document.addEventListener('dragstart', function(e) {
+            const target = e.target;
+            if (target && target.tagName === 'INPUT') {
+                return true;
+            }
+            e.preventDefault();
+            return false;
+        });
+
+        document.addEventListener('selectstart', function(e) {
+            const target = e.target;
+            if (target && target.tagName === 'INPUT' && target.classList.contains('input-answer')) {
+                return true;
+            }
+            e.preventDefault();
+            return false;
+        });
+
+        document.addEventListener('contextmenu', function(e) {
+            const target = e.target;
+            if (target && target.tagName === 'INPUT' && target.classList.contains('input-answer')) {
+                return true;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }, true);
+
+        // ============================================================
+        // ★ 4. DOM 变化检测
+        // ============================================================
+        let domMutationCount = 0;
+        const MAX_MUTATIONS = 100;
+
+        const observer = new MutationObserver(function(mutations) {
+            let importantChanges = 0;
+            
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes') {
+                    const target = mutation.target;
+                    if (target.id === 'submit-btn' || 
+                        target.id === 'quiz-container' ||
+                        target.id === 'score-board') {
+                        importantChanges++;
+                    }
+                }
+                
+                if (mutation.type === 'childList') {
+                    mutation.removedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            if (node.classList && 
+                                (node.classList.contains('question-block') || 
+                                 node.id === 'quiz-container')) {
+                                importantChanges++;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            if (importantChanges > 0) {
+                domMutationCount += importantChanges;
+                if (domMutationCount > MAX_MUTATIONS) {
+                    console.warn('⚠️ 检测到大量 DOM 修改');
+                }
+            }
+        });
+
+        observer.observe(document.body, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+            attributeFilter: ['id', 'class', 'style', 'disabled']
+        });
+
+        // ============================================================
+        // ★ 题库数据
+        // ============================================================
+        const questions = [
+            {
+                "id": "q1",
+                "questionText": "A: Listen! Someone in the next room.(\n)B: Oh, that's my sister. She (ans)(sing) has a great voice.",
+                "correctAns": "is singing",
+                "score": 5
+            },
+            {
+                "id": "q2",
+                "questionText": "A: What time do your grandparents usually take a walk?(\n)B: They usually (ans)(take) a walk in the park right after dinner.",
+                "correctAns": "take",
+                "score": 5
+            },
+            {
+                "id": "q3",
+                "questionText": "A: Have they solved the problem yet?(\n)B: No. Up to now, they (ans)(not find) a solution to this problem yet.",
+                "correctAns": "have not found",
+                "score": 5
+            },
+            {
+                "id": "q4",
+                "questionText": "A: Why didn't you answer my call last night?(\n)B: Sorry! I (ans)(watch) TV when the power suddenly went out.",
+                "correctAns": "was watching",
+                "score": 5
+            },
+            {
+                "id": "q5",
+                "questionText": "A: How long have you and Tom been friends?(\n)B: We (ans)(know) each other for more than ten years.",
+                "correctAns": "have known",
+                "score": 5
+            },
+            {
+                "id": "q6",
+                "questionText": "A: Does the sun rise in the west?(\n)B: No, science tells us that the sun (ans)(rise) in the east.",
+                "correctAns": "rises",
+                "score": 5
+            },
+            {
+                "id": "q7",
+                "questionText": "A: Did you catch the beginning of the film?(\n)B: No. By the time I arrived at the cinema, the movie (ans)(already start).",
+                "correctAns": "had already started",
+                "score": 5
+            },
+            {
+                "id": "q8",
+                "questionText": "A: Where is your uncle going tomorrow?(\n)B: Tomorrow, my uncle (ans)(fly) to London for a business meeting.",
+                "correctAns": "will fly",
+                "score": 5
+            },
+            {
+                "id": "q9",
+                "questionText": "A: Did Mr. Green teach here for a long time?(\n)B: Yes, he (ans)(teach) English here for 20 years before he retired last year.",
+                "correctAns": "had taught",
+                "score": 5
+            },
+            {
+                "id": "q10",
+                "questionText": "A: Is that a new smartphone?(\n)B: Yes, I (ans)(buy) it last week because my old one was broken.",
+                "correctAns": "bought",
+                "score": 5
+            },
+            {
+                "id": "q11",
+                "questionText": "Water (ans)(boil) at 100 degrees Celsius under normal atmospheric pressure.",
+                "correctAns": "boils",
+                "score": 5
+            },
+            {
+                "id": "q12",
+                "questionText": "Look at those dark clouds! It (ans)(rain) very soon.",
+                "correctAns": "is going to rain",
+                "score": 5
+            },
+            {
+                "id": "q13",
+                "questionText": "Jessica (ans)(finish) her homework already, so she can play video games now.",
+                "correctAns": "has finished",
+                "score": 5
+            },
+            {
+                "id": "q14",
+                "questionText": "While the children (ans)(play) in the garden, their mother was cooking dinner.",
+                "correctAns": "were playing",
+                "score": 5
+            },
+            {
+                "id": "q15",
+                "questionText": "The company (ans)(launch) a new product line next month to attract younger customers.",
+                "correctAns": "will launch",
+                "score": 5
+            },
+            {
+                "id": "q16",
+                "questionText": "Last night, Paul realized that he (ans)(leave) his keys inside the office.",
+                "correctAns": "had left",
+                "score": 5
+            },
+            {
+                "id": "q17",
+                "questionText": "Be quiet! The professor (ans)(give) an important speech on the stage right now.",
+                "correctAns": "is giving",
+                "score": 5
+            },
+            {
+                "id": "q18",
+                "questionText": "My brother (ans)(work) as a software engineer since he graduated from college.",
+                "correctAns": "has worked",
+                "score": 5
+            },
+            {
+                "id": "q19",
+                "questionText": "They (ans)(visit) Paris three times, but they still want to go there again.",
+                "correctAns": "have visited",
+                "score": 5
+            },
+            {
+                "id": "q20",
+                "questionText": "We (ans)(have) a barbecue party last Sunday, and everyone enjoyed it very much.",
+                "correctAns": "had",
+                "score": 5
+            }
+        ];
+
+        // ----- DOM 元素 -----
+        const container = document.getElementById('quiz-container');
+        const timerSpan = document.getElementById('timer');
+        const submitBtn = document.getElementById('submit-btn');
+        const scoreBoard = document.getElementById('score-board');
+
+        // ----- 判断是否包含 A: 或 B: 标签 -----
+        function hasLabel(raw) {
+            return raw.includes('A:') || raw.includes('B:');
+        }
+
+        function getAnsLocation(raw) {
+            const aMatch = raw.match(/^A:[^(]*\(ans\)/);
+            const bMatch = raw.match(/B:[^(]*\(ans\)/);
+            if (aMatch) return 'A';
+            if (bMatch) return 'B';
+            return 'none';
+        }
+
+        function parseQuestionText(raw) {
+            let questionPart = '';
+            let answerB = '';
+            let showLabel = hasLabel(raw);
+            let ansLocation = getAnsLocation(raw);
+
+            const bMatch = raw.match(/(\n)B:(.+)$/);
+            if (bMatch) {
+                questionPart = raw.substring(0, raw.indexOf('\nB:'));
+                answerB = bMatch[2].trim();
+            } else {
+                const separators = ['(\\n)', '(\n)', '\\n'];
+                for (const sep of separators) {
+                    if (raw.includes(sep)) {
+                        const parts = raw.split(sep);
+                        questionPart = parts[0];
+                        answerB = parts.slice(1).join(' ').replace(/^B:/, '').trim();
+                        break;
+                    }
+                }
+            }
+
+            if (!answerB && raw.includes('B:')) {
+                const bIndex = raw.indexOf('B:');
+                questionPart = raw.substring(0, bIndex);
+                answerB = raw.substring(bIndex + 2).trim();
+            }
+
+            if (!questionPart) {
+                questionPart = raw.trim();
+                showLabel = false;
+                ansLocation = 'none';
+            }
+
+            questionPart = questionPart.replace(/^A:/, '').trim();
+
+            let displayQuestion = questionPart;
+            let displayB = answerB;
+
+            if (ansLocation === 'A') {
+                displayQuestion = questionPart;
+                displayB = answerB.replace(/\(ans\)[^\s]*\s?/g, '').trim();
+            } else if (ansLocation === 'B') {
+                displayQuestion = questionPart.replace(/\(ans\)[^\s]*\s?/g, '').trim();
+                displayB = answerB;
+            } else {
+                displayQuestion = questionPart;
+                displayB = '';
+            }
+
+            if (!raw.includes('A:') && !raw.includes('B:')) {
+                showLabel = false;
+            }
+
+            return {
+                questionPart: displayQuestion,
+                answerB: displayB,
+                showLabel,
+                ansLocation
+            };
+        }
+
+        // ----- 渲染题目 -----
+        function renderQuestions() {
+            let html = '';
+            questions.forEach((q) => {
+                const { questionPart, answerB, showLabel, ansLocation } = parseQuestionText(q.questionText);
+
+                let displayQuestion = questionPart;
+                let displayB = answerB;
+
+                if (ansLocation === 'A') {
+                    displayQuestion = questionPart.replace(/\(ans\)/g, '<span class="ans-placeholder">(ans)</span>');
+                } else if (ansLocation === 'B') {
+                    displayB = answerB.replace(/\(ans\)/g, '<span class="ans-placeholder">(ans)</span>');
+                } else {
+                    displayQuestion = questionPart.replace(/\(ans\)/g, '<span class="ans-placeholder">(ans)</span>');
+                }
+
+                const labelClass = showLabel ? 'label-a' : 'label-a hidden';
+
+                html += `
+                    <div class="question-block" data-id="${q.id}">
+                        <div class="row-a">
+                            <span class="${labelClass}">A:</span>
+                            <span class="question-text">${displayQuestion}</span>
+                            <span class="score-tag">${q.score}分</span>
+                            <span id="result-${q.id}" class="result-badge"></span>
+                        </div>
+                        <div class="input-row">
+                            <input type="text" id="ans-${q.id}" class="input-answer" placeholder="请输入答案" autocomplete="off">
+                        </div>
+                        ${displayB ? `<div class="b-answer"><strong>B:</strong> ${displayB}</div>` : ''}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+
+            const totalMax = questions.reduce((acc, q) => acc + q.score, 0);
+            scoreBoard.innerHTML = `🏆 得分：<span>0</span> / ${totalMax} 分`;
+        }
+
+        // ----- 计时器 -----
+        let timerInterval = null;
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function startCountdown() {
+            timerInterval = setInterval(() => {
+                window.remainingTime--;
+                timerSpan.textContent = window.remainingTime;
+
+                if (window.remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerSpan.textContent = '0';
+                    if (!submitBtn.disabled && !isSubmitted) {
+                        checkAllAnswers();
+                    }
+                }
+            }, 1000);
+        }
+
+        // ----- 核心判题函数 -----
+        function checkAllAnswers() {
+            if (submitBtn.disabled || isSubmitted) return;
+            stopTimer();
+            submitBtn.disabled = true;
+            isSubmitted = true;
+
+            const allInputs = document.querySelectorAll('.input-answer');
+            allInputs.forEach(inp => inp.disabled = true);
+
+            let totalScore = 0;
+            let maxScore = 0;
+
+            questions.forEach((q) => {
+                maxScore += q.score;
+                const inputEl = document.getElementById('ans-' + q.id);
+                const resultSpan = document.getElementById('result-' + q.id);
+                const userAnswer = inputEl.value.trim();
+
+                resultSpan.innerHTML = '';
+
+                if (userAnswer === q.correctAns) {
+                    resultSpan.textContent = '✅';
+                    resultSpan.style.color = '#2e7d32';
+                    totalScore += q.score;
+                } else {
+                    resultSpan.innerHTML = `❌ <span class="wrong-hint">正解: ${q.correctAns}</span>`;
+                    resultSpan.style.color = '#b33c3c';
+                }
+            });
+
+            scoreBoard.innerHTML = `🏆 得分：<span>${totalScore}</span> / ${maxScore} 分`;
+        }
+
+        // ----- 初始化 -----
+        function init() {
+            renderQuestions();
+            startCountdown();
+        }
+
+        // ----- 事件绑定 -----
+        window.checkAllAnswers = checkAllAnswers;
+
+        submitBtn.addEventListener('click', function(e) {
+            if (submitBtn.disabled || isSubmitted) return;
+            checkAllAnswers();
+        });
+
+        window.addEventListener('beforeunload', function() {
+            stopTimer();
+        });
+
+        // 手动关闭遮罩（调试用）
+        window.closeDevtoolsOverlay = function() {
+            const overlay = document.getElementById('devtools-overlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+                devtoolsOpen = false;
+                detectionCount = 0;
+            }
+        };
+
+        // ----- 启动 -----
+        setTimeout(init, 500);
+
+        console.log('🔒 安全防护已启动');
+        console.log('📝 题库已加载，共 ' + questions.length + ' 道题目');
+
+    })();
+</script>
+</body>
+</html>
